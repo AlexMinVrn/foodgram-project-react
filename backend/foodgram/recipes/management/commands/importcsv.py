@@ -12,8 +12,9 @@ class Command(BaseCommand):
         Ingredients.objects.all().delete()
         with open(os.path.join("data", "ingredients.csv"), 'r', encoding='utf-8') as fin:
             dr = csv.DictReader(fin)
-            for i in dr:
-                Ingredients.objects.get_or_create(
-                    name=i['name'],
-                    measurement_unit=i['measurement_unit']
-                )
+            to_db = [Ingredients(
+                name=i['name'],
+                measurement_unit=i['measurement_unit']
+            ) for i in dr]
+
+        Ingredients.objects.bulk_create(to_db)
