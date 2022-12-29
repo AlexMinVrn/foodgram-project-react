@@ -1,22 +1,22 @@
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, filters, generics, status
+from recipes.models import (Favorites, Ingredients, IngredientsRecipes,
+                            Recipes, ShoppingCart, Tags, User)
+from rest_framework import filters, generics, status, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from recipes.models import (Tags, Ingredients, Recipes, User,
-                            Favorites, ShoppingCart, IngredientsRecipes)
 from users.models import Subscription
+
 from .filters import CustomRecipeFilter
 from .permissions import IsAuthorOrReadOnlyPermission
-from .serializers import (TagsSerializer, IngredientsSerializer,
+from .serializers import (FavoritesSerializer, IngredientsSerializer,
                           RecipesGetSerializer, RecipesWriteSerializer,
-                          FavoritesSerializer, ShoppingCartSerializer,
-                          UserExtendedSerializer, ToSubscribeSerializer)
+                          ShoppingCartSerializer, TagsSerializer,
+                          ToSubscribeSerializer, UserExtendedSerializer)
 
 
 class SubscriptionsList(generics.ListAPIView):
@@ -24,7 +24,8 @@ class SubscriptionsList(generics.ListAPIView):
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
-        return User.objects.filter(following__user=self.request.user).all()
+        return User.objects.filter(following__user=self.request.user).annotate(
+            recipes_count=Count('recipes'))
 
 
 class ToSubscribeView(APIView):

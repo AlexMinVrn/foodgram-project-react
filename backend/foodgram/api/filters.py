@@ -1,5 +1,4 @@
-from django_filters import CharFilter, FilterSet, NumberFilter, BooleanFilter
-
+from django_filters import BooleanFilter, CharFilter, FilterSet
 from recipes.models import Recipes
 
 

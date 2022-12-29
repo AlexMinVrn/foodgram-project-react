@@ -1,6 +1,5 @@
 from django.core.validators import MinValueValidator
 from django.db import models
-
 from users.models import User
 
 
@@ -56,8 +55,7 @@ class Recipes(models.Model):
     image = models.ImageField(
         verbose_name='Картинка',
         upload_to='recipes/images/',
-        help_text='Загрузите фото к рецепту',
-        null=True, blank=True
+        help_text='Загрузите фото к рецепту'
     )
     text = models.TextField(
         max_length=2000,
@@ -171,6 +169,3 @@ class ShoppingCart(models.Model):
                 fields=['user', 'recipes'],
             ),
         ]
-
-
-

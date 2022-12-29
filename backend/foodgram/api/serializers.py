@@ -1,13 +1,14 @@
 import base64
 
 from django.core.files.base import ContentFile
+from django.db import transaction
 from djoser.serializers import UserCreateSerializer, UserSerializer
+from recipes.models import (Favorites, Ingredients, IngredientsRecipes,
+                            Recipes, RecipesTags, ShoppingCart, Tags)
 from rest_framework import serializers
+from users.models import Subscription, User
 
 from foodgram import settings
-from recipes.models import (Ingredients, Tags, Recipes, IngredientsRecipes,
-                            RecipesTags, Favorites, ShoppingCart)
-from users.models import Subscription, User
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -31,9 +32,7 @@ class CustomUserSerializer(UserSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        if not request.user.is_authenticated:
-            return False
-        return Subscription.objects.filter(
+        return request.user.is_authenticated and Subscription.objects.filter(
             user=request.user, following=obj
         ).exists()
 
@@ -48,7 +47,7 @@ class RecipesMiniSerializer(serializers.ModelSerializer):
 class UserExtendedSerializer(CustomUserSerializer):
     """Сериализатор для пользователей на кого подписался"""
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+    recipes_count = serializers.IntegerField()
 
     class Meta:
         model = User
@@ -64,9 +63,6 @@ class UserExtendedSerializer(CustomUserSerializer):
         return RecipesMiniSerializer(
             recipes, many=True, context=self.context
         ).data
-
-    def get_recipes_count(self, obj):
-        return obj.recipes.count()
 
 
 class ToSubscribeSerializer(serializers.ModelSerializer):
@@ -215,7 +211,7 @@ class RecipesWriteSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tags.objects.all(), many=True,
     )
-    # image = Base64ImageField()
+    image = Base64ImageField()
 
     class Meta:
         model = Recipes
@@ -237,36 +233,45 @@ class RecipesWriteSerializer(serializers.ModelSerializer):
         for ingredient in ingredients:
             amount = ingredient['amount']
             if int(amount) < 1:
-                raise serializers.ValidationError({
-                   'amount': 'Количество ингредиента не может быть равным 0'
-                })
+                raise serializers.ValidationError(
+                    {
+                        'amount': 'Количество ингредиента не может быть 0'
+                    }
+                )
             if ingredient['id'] in list:
-                raise serializers.ValidationError({
-                   'ingredient': 'Ингредиенты не должны повторяться'
-                })
+                raise serializers.ValidationError(
+                    {
+                        'ingredient': 'Ингредиенты не должны повторяться'
+                    }
+                )
             list.append(ingredient['id'])
         return data
 
+    @transaction.atomic
     def create_ingredients(self, ingredients, recipe):
         for item in ingredients:
             ingredient = Ingredients.objects.get(id=item['id'])
-            print(ingredient)
             IngredientsRecipes.objects.create(
                 ingredients=ingredient, recipes=recipe, amount=item['amount']
             )
 
+    @transaction.atomic
     def create_tags(self, tags, recipe):
-        for tag in tags:
-            RecipesTags.objects.create(recipes=recipe, tags=tag)
+        tags = [
+            RecipesTags(
+                recipe=recipe,
+                tags=tag)
+            for tag in tags
+        ]
+        RecipesTags.objects.bulk_create(tags)
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         author = self.context.get('request').user
         recipe = Recipes.objects.create(author=author, **validated_data)
+        recipe.tags.set(tags)
         self.create_ingredients(ingredients, recipe)
-        # recipe.tags.set(tags)
-        self.create_tags(tags, recipe)
         return recipe
 
     def update(self, instance, validated_data):
