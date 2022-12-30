@@ -3,12 +3,11 @@ import base64
 from django.core.files.base import ContentFile
 from django.db import transaction
 from djoser.serializers import UserCreateSerializer, UserSerializer
+from foodgram import settings
 from recipes.models import (Favorites, Ingredients, IngredientsRecipes,
                             Recipes, RecipesTags, ShoppingCart, Tags)
 from rest_framework import serializers
 from users.models import Subscription, User
-
-from foodgram import settings
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
