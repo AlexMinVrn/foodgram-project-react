@@ -180,17 +180,13 @@ class RecipesGetSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
-        if request is None or request.user.is_anonymous:
-            return False
-        return Favorites.objects.filter(
+        return request.user.is_authenticated and Favorites.objects.filter(
             user=request.user, recipes_id=obj
         ).exists()
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
-        if request is None or request.user.is_anonymous:
-            return False
-        return ShoppingCart.objects.filter(
+        return request.user.is_authenticated and ShoppingCart.objects.filter(
             user=request.user, recipes_id=obj
         ).exists()
 
@@ -248,22 +244,27 @@ class RecipesWriteSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create_ingredients(self, ingredients, recipe):
-        for item in ingredients:
-            ingredient = Ingredients.objects.get(id=item['id'])
-            IngredientsRecipes.objects.create(
-                ingredients=ingredient, recipes=recipe, amount=item['amount']
-            )
+        print(ingredients)
+        ingredients = [
+            IngredientsRecipes(
+                recipes=recipe,
+                ingredients=Ingredients.objects.get(id=ingredient['id']),
+                amount=ingredient['amount'])
+            for ingredient in ingredients
+        ]
+        IngredientsRecipes.objects.bulk_create(ingredients)
 
     @transaction.atomic
     def create_tags(self, tags, recipe):
         tags = [
             RecipesTags(
-                recipe=recipe,
+                recipes=recipe,
                 tags=tag)
             for tag in tags
         ]
         RecipesTags.objects.bulk_create(tags)
 
+    @transaction.atomic
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
@@ -273,6 +274,7 @@ class RecipesWriteSerializer(serializers.ModelSerializer):
         self.create_ingredients(ingredients, recipe)
         return recipe
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         RecipesTags.objects.filter(recipes=instance).delete()
         IngredientsRecipes.objects.filter(recipes=instance).delete()
