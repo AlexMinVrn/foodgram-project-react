@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 
 from recipes.models import (Favorites, Ingredients, IngredientsRecipes,
                             Recipes, ShoppingCart, Tags, User)
-from rest_framework import filters, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
