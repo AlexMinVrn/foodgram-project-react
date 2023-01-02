@@ -5,9 +5,11 @@ from users.models import User
 
 class Tags(models.Model):
     """Модель для тегов."""
-    name = models.CharField(max_length=200, unique=True)
+    name = models.CharField(max_length=200, unique=True,
+                            verbose_name='Название')
     slug = models.SlugField(max_length=200, unique=True)
-    color = models.CharField(max_length=7)
+    color = models.CharField(max_length=7, unique=True,
+                             verbose_name='Цвет')
 
     def __str__(self):
         return self.name
@@ -30,8 +32,12 @@ class Ingredients(models.Model):
     )
 
     class Meta:
+        ordering = ['name']
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
+
+    def __str__(self):
+        return self.name
 
 
 class Recipes(models.Model):
@@ -87,8 +93,10 @@ class Recipes(models.Model):
 
 class RecipesTags(models.Model):
     """Модель связи рецептов и тегов."""
-    recipes = models.ForeignKey(Recipes, on_delete=models.CASCADE)
-    tags = models.ForeignKey(Tags, on_delete=models.CASCADE)
+    recipes = models.ForeignKey(Recipes, on_delete=models.CASCADE,
+                                verbose_name='Рецепт')
+    tags = models.ForeignKey(Tags, on_delete=models.CASCADE,
+                             verbose_name='Тег')
 
     class Meta:
         verbose_name = 'Тег для рецепта'
@@ -107,7 +115,10 @@ class IngredientsRecipes(models.Model):
                                 verbose_name='Рецепт')
     ingredients = models.ForeignKey(Ingredients, on_delete=models.CASCADE,
                                     verbose_name='Ингредиент')
-    amount = models.PositiveSmallIntegerField(verbose_name='Количество')
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество',
+        validators=[MinValueValidator(1)]
+    )
 
     def __str__(self):
         return f'{self.ingredients} в {self.recipes}'

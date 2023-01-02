@@ -1,12 +1,23 @@
-from django_filters import BooleanFilter, CharFilter, FilterSet
-from recipes.models import Recipes
+from django_filters import rest_framework as filter
+from rest_framework.filters import SearchFilter
+
+from recipes.models import Recipes, Tags
 
 
-class CustomRecipeFilter(FilterSet):
+class IngredientFilter(SearchFilter):
+    search_param = 'name'
 
-    tags = CharFilter(field_name='tags__slug', lookup_expr='icontains')
-    is_favorited = BooleanFilter(method='get_is_favorited')
-    is_in_shopping_cart = BooleanFilter(method='get_is_in_shopping_cart')
+
+class CustomRecipeFilter(filter.FilterSet):
+
+    tags = filter.ModelMultipleChoiceFilter(
+        field_name='tags__slug',
+        to_field_name='slug',
+        queryset=Tags.objects.all(),
+    )
+    is_favorited = filter.BooleanFilter(method='get_is_favorited')
+    is_in_shopping_cart = filter.BooleanFilter(
+        method='get_is_in_shopping_cart')
 
     class Meta:
         model = Recipes

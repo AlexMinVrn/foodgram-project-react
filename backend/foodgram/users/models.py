@@ -20,6 +20,7 @@ class User(AbstractUser):
         return self.username
 
     class Meta:
+        ordering = ['-pk']
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
@@ -46,3 +47,6 @@ class Subscription(models.Model):
                 fields=['user', 'following'],
             ),
         ]
+
+    def __str__(self):
+        return f'{self.user} подписан  на {self.following}'

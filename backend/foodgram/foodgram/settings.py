@@ -8,7 +8,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = str(os.getenv('SECRET_KEY'))
 
-DEBUG = False
+DEBUG = str(os.getenv('DEBUG'))
 
 ALLOWED_HOSTS = ['*']
 
@@ -20,10 +20,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'django_filters',
     'rest_framework.authtoken',
+    'django_filters',
     'djoser',
-    'users',
+    # 'corsheaders',
+    'users.apps.UsersConfig',
     'recipes',
     'api',
 ]

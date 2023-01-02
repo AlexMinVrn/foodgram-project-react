@@ -200,6 +200,7 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
+@transaction.atomic
 class RecipesWriteSerializer(serializers.ModelSerializer):
     """Сериализатор для создания, изменения и удаления рецептов."""
     ingredients = AddIngredientsRecipesSerializer(many=True)
