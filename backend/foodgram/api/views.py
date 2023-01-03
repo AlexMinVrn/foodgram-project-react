@@ -9,7 +9,6 @@ from recipes.models import (Favorites, Ingredients, IngredientsRecipes,
                             Recipes, ShoppingCart, Tags, User)
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.models import Subscription
@@ -25,7 +24,7 @@ from .serializers import (FavoritesSerializer, IngredientsSerializer,
 
 class SubscriptionsList(ListAPIView):
     serializer_class = UserExtendedSerializer
-    pagination_class = LimitOffsetPagination
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         return User.objects.filter(following__user=self.request.user).annotate(
@@ -85,8 +84,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthorOrReadOnlyPermission]
     filter_backends = [DjangoFilterBackend]
     filterset_class = CustomRecipeFilter
-    
-    pagination_class = LimitOffsetPagination
+    pagination_class = CustomPagination
     ordering = ['-pub_date']
 
     def get_serializer_class(self):

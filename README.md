@@ -36,7 +36,6 @@ git@github.com:AlexMinVrn/foodgram-project-react.git
 #### Подготовьте дополнительные данные (.env и nginx.conf):
 
 ##### Скопируйте в директорию проекта infra/ файл nginx.conf 
-(он есть в репозитории, но на сервер его нужно перенести в ручном режиме)
 
 ##### В файле nginx.conf в строке server_name укажите данные ip вашего сервера.
 
