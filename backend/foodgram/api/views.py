@@ -2,13 +2,12 @@ from django.db.models import Count, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.generics import ListAPIView
-from rest_framework.permissions import AllowAny
-
 from recipes.models import (Favorites, Ingredients, IngredientsRecipes,
                             Recipes, ShoppingCart, Tags, User)
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.models import Subscription
@@ -81,11 +80,10 @@ class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipesViewSet(viewsets.ModelViewSet):
     """ViewSet для доступа к рецептам."""
     queryset = Recipes.objects.all()
-    permission_classes = [IsAuthorOrReadOnlyPermission]
-    filter_backends = [DjangoFilterBackend]
+    permission_classes = [IsAuthorOrReadOnlyPermission, ]
+    filter_backends = [DjangoFilterBackend, ]
     filterset_class = CustomRecipeFilter
     pagination_class = CustomPagination
-    ordering = ['-pub_date']
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -99,7 +97,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
 
 class FavoriteView(APIView):
-    pagination_class = CustomPagination
+    # pagination_class = CustomPagination
 
     def post(self, request, id):
         data = {
@@ -113,7 +111,9 @@ class FavoriteView(APIView):
             )
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                return Response(
+                    serializer.data, status=status.HTTP_201_CREATED
+                )
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id):

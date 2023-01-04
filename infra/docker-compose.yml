@@ -9,6 +9,7 @@ services:
 
   backend:
     image: alexmin1404/foodgram-backend
+    restart: always
     volumes:
       - ../static/:/app/static/
       - ../media/:/app/media/recipes/
@@ -17,11 +18,9 @@ services:
       - db
     env_file:
       - ./.env
-    restart: always
 
   frontend:
     image: alexmin1404/foodgram-frontend
-
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
