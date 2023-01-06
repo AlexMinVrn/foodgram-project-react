@@ -4,12 +4,25 @@ from .models import (Favorites, Ingredients, IngredientsRecipes, Recipes,
                      RecipesTags, ShoppingCart, Tags)
 
 
+class IngredientsRecipesInline(admin.TabularInline):
+    model = IngredientsRecipes
+
+
+class RecipesTagsInline(admin.TabularInline):
+    model = RecipesTags
+
+
 @admin.register(Recipes)
 class RecipesAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author')
-    search_fields = ('name', 'tags')
+    list_display = ('name', 'author', 'view_favorite_count')
+    search_fields = ('name__startswith',)
     list_filter = ('name', 'author', 'tags')
     empty_value_display = '-пусто-'
+    inlines = [IngredientsRecipesInline, RecipesTagsInline]
+
+    def view_favorite_count(self, obj):
+        return obj.favorites.count()
+    view_favorite_count.short_description = 'Всего в избранном'
 
 
 @admin.register(Tags)
@@ -21,6 +34,7 @@ class TagsAdmin(admin.ModelAdmin):
 class IngredientsAdmin(admin.ModelAdmin):
     list_display = ('name', 'measurement_unit')
     list_filter = ('name',)
+    search_fields = ('name__startswith',)
 
 
 @admin.register(RecipesTags)
