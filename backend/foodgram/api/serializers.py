@@ -82,11 +82,6 @@ class ToSubscribeSerializer(serializers.ModelSerializer):
                 'Нельзя подписываться на себя!')
         return data
 
-    def to_representation(self, instance):
-        return UserExtendedSerializer(instance.following, context={
-            'request': self.context.get('request')
-        }).data
-
 
 class TagsSerializer(serializers.ModelSerializer):
     """Сериализатор для тегов."""

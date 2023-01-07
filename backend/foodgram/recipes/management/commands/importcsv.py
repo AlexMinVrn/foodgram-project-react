@@ -6,7 +6,7 @@ from recipes.models import Ingredients
 
 
 class Command(BaseCommand):
-    """Обработчик менеджмент-команды по импорту csv-данных в БД SQLite."""
+    """Обработчик менеджмент-команды по импорту csv-данных в БД."""
     def handle(self, *args, **options):
         Ingredients.objects.all().delete()
         with open(os.path.join("data", "ingredients.csv"), 'r', encoding='utf-8') as fin:
