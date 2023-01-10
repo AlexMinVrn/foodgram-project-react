@@ -240,7 +240,6 @@ class RecipesWriteSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create_ingredients(self, ingredients, recipe):
-        print(ingredients)
         ingredients = [
             IngredientsRecipes(
                 recipes=recipe,
@@ -249,16 +248,6 @@ class RecipesWriteSerializer(serializers.ModelSerializer):
             for ingredient in ingredients
         ]
         IngredientsRecipes.objects.bulk_create(ingredients)
-
-    @transaction.atomic
-    def create_tags(self, tags, recipe):
-        tags = [
-            RecipesTags(
-                recipes=recipe,
-                tags=tag)
-            for tag in tags
-        ]
-        RecipesTags.objects.bulk_create(tags)
 
     @transaction.atomic
     def create(self, validated_data):
